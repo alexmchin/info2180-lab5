@@ -1,22 +1,28 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 $host = 'localhost';
 $username = 'lab5_user';
 $password = 'password123';
 $dbname = 'world';
 
 $country = htmlspecialchars($_GET["country"]);
+$context = htmlspecialchars($_GET["context"]);
 
 $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
 //$stmt = $conn->query("SELECT * FROM countries");
 
-
-$stmt = $conn->query("SELECT * FROM countries WHERE name LIKE '%$country%'");
-
+if ($context == "country") {
+  $stmt = $conn->query("SELECT * FROM countries WHERE name LIKE '%$country%'");
+}
+elseif ($context == "city") {
+  $stmt = $conn->query("SELECT cities.name, cities.district, cities.population FROM cities JOIN countries ON cities.country_code=countries.code WHERE countries.name LIKE '%$country%'");
+}
 
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
-<?php?>
+<?php if ($context == "country"): ?>
 <table>
   <tr>
     <th>Name</th>
@@ -33,5 +39,20 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </tr>
   <?php endforeach; ?>
 </table>
-
+<?php elseif ($context == "city"): ?>
+<table>
+  <tr>
+    <th>Name</th>
+    <th>District</th> 
+    <th>Population</th>
+  </tr>
+  <?php foreach ($results as $row): ?>
+    <tr>
+      <td><?= $row['name'] ?></td>
+      <td><?= $row['district'] ?></td>
+      <td><?= $row['population'] ?></td>
+    </tr>
+  <?php endforeach; ?>
+</table>
+<?php endif ?>
 
